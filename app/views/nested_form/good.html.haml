@@ -1,0 +1,123 @@
+%h1 NestedForm#good
+
+= simple_form_for(@nested_form, url: nested_form_bad_path) do |f|
+  %h4 Ouvintes
+  .table-responsive
+    %table.table.table-bordered.table-condensed#listener
+      %thead
+        %tr
+          %th= link_to fa_icon('user-plus', text: 'Add Category'), 'javascript:void(0)',
+            '@click': 'addCategory', class: 'btn btn-primary btn-sm pull-right'
+          = f.simple_fields_for :listener_deadlines, wrapper: false do |f_deadline|
+            %th.deadline{ 'v-for': "deadline in listener_deadlines", ':class': '{ hide: deadline._destroy }',
+              style: 'min-width: 155px' }
+              = f_deadline.input_field :_destroy, as: :hidden, 'v-model': 'deadline._destroy'
+              = f_deadline.input :deadline, wrapper: 'compact_input_group', input_group_html: { data: { flatpickr: true, wrap: true, alt_format: 'd/m/Y', enable_time: false } } do
+                %span.input-group-btn{ data: { toggle: true } }
+                  %button.btn.btn-default.btn-sm{ type: 'button' }= fa_icon 'calendar'
+                = f_deadline.input_field :deadline, 'v-model': 'deadline.deadline', class: 'form-control input-sm', data: { input: true }
+                %span.input-group-btn= link_to fa_icon('calendar-times-o'), 'javascript:void(0)',
+                  '@click': 'destroy(deadline)', class: 'btn btn-danger btn-sm'
+          %th= link_to fa_icon('calendar-plus-o'), 'javascript:void(0)', '@click': 'addDeadline',
+            class: 'btn btn-primary btn-sm'
+      %tbody
+        = f.simple_fields_for :categories do |f_category|
+          %tr{ 'v-for': 'category in categories', ':class': '{ hide: category._destroy }' }
+            %td
+              = f_category.input_field :id, as: :hidden, 'v-model': 'category.id' if f_category.object.id
+              = f_category.input_field :_destroy, as: :hidden, 'v-model': 'category._destroy'
+              = f_category.input :name, label: false, wrapper: 'compact_input_group' do
+                = f_category.input_field :name, 'v-model': 'category.name', class: 'form-control input-sm'
+                %span.input-group-btn= link_to fa_icon('user-times'), 'javascript:void(0)',
+                  '@click': 'destroy(category)', class: 'btn btn-danger btn-sm'
+            = f_category.simple_fields_for :listener_deadline_values do |f_deadline_value|
+              %td{ 'v-for': 'deadline_value in category.listener_deadline_values', ':class': '{ hide: deadline_value.deadline._destroy }' }
+                = f_deadline_value.input_field :id, as: :hidden, 'v-model': 'deadline_value.id' if f_deadline_value.object.id
+                = f_deadline_value.input_field :_destroy, as: :hidden, 'v-model': 'deadline_value.deadline._destroy'
+                = f_deadline_value.input_field :deadline, as: :hidden, 'v-model': 'deadline_value.deadline.deadline'
+                = f_deadline_value.input :value, label: false, wrapper: 'compact_input_group' do
+                  %span.input-group-addon.input-sm R$
+                  = f_deadline_value.input_field :value, as: :string, 'v-model': 'deadline_value.value', class: 'form-control input-sm'
+
+  = f.button :submit, class: 'btn-primary'
+
+:coffeescript
+  categories = #{@nested_form.categories.as_json(
+    only: [:id, :name, :_destroy], include: {
+      listener_deadline_values: { only: [:id, :value] },
+      presenter_deadline_values: { only: [:id, :value] }
+    }
+  ).to_json}
+  listener_deadlines = #{@nested_form.listener_deadlines.as_json(only: [:deadline, :_destroy]).to_json}
+  presenter_deadlines = #{@nested_form.presenter_deadlines.as_json(only: [:deadline, :_destroy]).to_json}
+  categories.forEach (category) ->
+    category._destroy ||= false
+    listener_deadlines.forEach (deadline, index) ->
+      deadline._destroy ||= false
+      category.listener_deadline_values[index].deadline = deadline
+    presenter_deadlines.forEach (deadline, index) ->
+      deadline._destroy ||= false
+      category.presenter_deadline_values[index].deadline = deadline
+
+  setInputIndex = (input, association, index) ->
+    if input.attr('id')? and input.attr('name')?
+      input.attr 'id', input.attr('id').replace(///(.+\#{association}_attributes_)\d+(_.+)///, "$1\#{index}$2")
+      input.attr 'name', input.attr('name').replace(///(.+\#{association}_attributes\]\[)\d+(\].+)///, "$1\#{index}$2")
+
+  updateInputsIndex = (table) ->
+    thead = $(table).find('thead')
+    tbody = $(table).find('tbody')
+    thead.find('th').not('th:nth-child(1)').each (idx, elem) ->
+      $(elem).find('input').each -> setInputIndex($(@), 'listener_deadlines', idx)
+    tbody.find('tr').each (idx, elem) ->
+      $(elem).find('input').each -> setInputIndex($(@), 'categories', idx)
+      $(elem).find('td').not('td:nth-child(1)').each (idx, elem) ->
+        $(elem).find('input').each -> setInputIndex($(@), 'listener_deadline_values', idx)
+
+  updateStripes = (el) ->
+    tbody = $(el).find('tbody')
+    tbody.find('tr:not(.hide)').each (idx) ->
+      $(@).toggleClass 'stripe', !(idx & 1)
+
+  updateTable = (table) ->
+    updateInputsIndex(table)
+    updateStripes(table)
+
+  commonMethods = {
+    destroy: (model) -> model._destroy = true
+    addCategory: ->
+      new_category = {
+        id: null, name: null, _destroy: false, listener_deadline_values: [], presenter_deadline_values: []
+      }
+      categories.push new_category
+      for deadline in listener_deadlines
+        new_category.listener_deadline_values.push { id: null, value: null, deadline: deadline }
+      for deadline in presenter_deadlines
+        new_category.presenter_deadline_values.push { id: null, value: null, deadline: deadline }
+  }
+
+  listenerMethods = $.extend {}, commonMethods, {
+    addDeadline: ->
+      new_deadline = { deadline: null, _destroy: false }
+      listener_deadlines.push(new_deadline)
+      categories.forEach (category) ->
+        category.listener_deadline_values.push { id: null, value: null, deadline: new_deadline }
+  }
+
+  presenterMethods = $.extend {}, commonMethods, {
+    addDeadline: ->
+      new_deadline = { deadline: null, _destroy: false }
+      presenter_deadlines.push(new_deadline)
+      categories.forEach (category) ->
+        category.presenter_deadline_values.push { id: null, value: null, deadline: new_deadline }
+  }
+
+  listener = new Vue
+    el: '#listener'
+    data:
+      categories: categories
+      listener_deadlines: listener_deadlines
+      presenter_deadlines: presenter_deadlines
+    methods: listenerMethods
+    updated: -> updateTable(@$el)
+

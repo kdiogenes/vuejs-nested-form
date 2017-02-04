@@ -1,0 +1,31 @@
+version: '2'
+services:
+  db:
+    image: postgres
+    command: -c fsync=off # *** don't use in production! ***
+  web:
+    build: .
+    command: bundle exec rails s -p 3000 -b '0.0.0.0'
+    user: '1000:1000' # user_id:group_id
+    volumes:
+      - .:/myapp
+      - bundle:/usr/local/bundle
+    ports:
+      - "4000:3000"
+    depends_on:
+      - db
+  spring:
+    build: .
+    user: '1000:1000' # user_id:group_id
+    volumes:
+      - .:/myapp
+      - bundle:/usr/local/bundle
+    command: spring server
+
+    # This ensures that the pid namespace is shared between the host
+    # and the container. It's not necessary to be able to run spring
+    # commands, but it is necessary for "spring status" and "spring stop"
+    # to work properly.
+    pid: host
+volumes:
+  bundle:
