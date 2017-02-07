@@ -11,7 +11,7 @@ services:
       - .:/myapp
       - bundle:/usr/local/bundle
     ports:
-      - "4000:3000"
+      - "3100:3000"
     depends_on:
       - db
   spring:
