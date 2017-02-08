@@ -12,13 +12,12 @@
             %th.deadline{ 'v-for': "deadline in listener_deadlines", ':class': '{ hide: deadline._destroy }',
               style: 'min-width: 155px' }
               = f_deadline.input_field :_destroy, as: :hidden, 'v-model': 'deadline._destroy'
-              = f_deadline.input :deadline, wrapper: 'compact_input_group', input_group_html: { data: { flatpickr: true, wrap: true, alt_format: 'd/m/Y', enable_time: false } } do
+              = f_deadline.input :deadline, wrapper: 'compact_input_group', input_group_html: { data: { flatpickr: true, wrap: true, alt_format: 'd/m/Y', enable_time: false } }, error_html: {} do
                 %span.input-group-btn{ data: { toggle: true } }
                   %button.btn.btn-default.btn-sm{ type: 'button' }= fa_icon 'calendar'
                 = f_deadline.input_field :deadline, 'v-model': 'deadline.deadline', class: 'form-control input-sm', data: { input: true }
                 %span.input-group-btn= link_to fa_icon('calendar-times-o'), 'javascript:void(0)',
                   '@click': 'destroy(deadline)', class: 'btn btn-danger btn-sm'
-              = f_deadline.error :deadline
           %th= link_to fa_icon('calendar-plus-o'), 'javascript:void(0)', '@click': 'addDeadline',
             class: 'btn btn-primary btn-sm'
       %tbody
@@ -120,5 +119,6 @@
       listener_deadlines: listener_deadlines
       presenter_deadlines: presenter_deadlines
     methods: listenerMethods
+    mounted: -> updateTable(@$el)
     updated: -> updateTable(@$el)
 

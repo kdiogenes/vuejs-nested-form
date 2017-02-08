@@ -1,5 +1,5 @@
 PATH
-  remote: ./vendor/gems/active_type
+  remote: vendor/gems/active_type
   specs:
     active_type (0.6.2)
       activerecord (>= 3.2)
@@ -212,4 +212,4 @@ DEPENDENCIES
   web-console
 
 BUNDLED WITH
-   1.13.6
+   1.14.3
