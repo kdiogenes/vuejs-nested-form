@@ -4,5 +4,6 @@ RUN mkdir /myapp
 WORKDIR /myapp
 ADD Gemfile /myapp/Gemfile
 ADD Gemfile.lock /myapp/Gemfile.lock
+ADD vendor /myapp/vendor
 RUN bundle install --jobs 20 --retry 5
 ADD . /myapp

@@ -1,6 +1,6 @@
 %h1 NestedForm#good
 
-= simple_form_for(@nested_form, url: nested_form_bad_path) do |f|
+= simple_form_for(build_nested_form(true).tap(&:validate), url: nested_form_good_path) do |f|
   %h4 Ouvintes
   .table-responsive
     %table.table.table-bordered.table-condensed#listener
@@ -18,6 +18,7 @@
                 = f_deadline.input_field :deadline, 'v-model': 'deadline.deadline', class: 'form-control input-sm', data: { input: true }
                 %span.input-group-btn= link_to fa_icon('calendar-times-o'), 'javascript:void(0)',
                   '@click': 'destroy(deadline)', class: 'btn btn-danger btn-sm'
+              = f_deadline.error :deadline
           %th= link_to fa_icon('calendar-plus-o'), 'javascript:void(0)', '@click': 'addDeadline',
             class: 'btn btn-primary btn-sm'
       %tbody
