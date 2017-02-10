@@ -19,8 +19,8 @@ class NestedFormController < ApplicationController
       category.listener_deadline_values.build if category.listener_deadline_values.empty?
       # category.presenter_deadline_values.build if category.presenter_deadline_values.empty?
     end
-    @nested_form.listener_deadlines.each(&:validate)
     @nested_form.validate if request.method == 'POST'
+    @nested_form.listener_deadlines.each(&:validate)
     @nested_form
   end
 

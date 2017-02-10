@@ -9,45 +9,52 @@
           %th= link_to fa_icon('user-plus', text: 'Add Category'), 'javascript:void(0)',
             '@click': 'addCategory', class: 'btn btn-primary btn-sm pull-right'
           = f.simple_fields_for :listener_deadlines, wrapper: false do |f_deadline|
-            %th.deadline{ 'v-for': "deadline in listener_deadlines", ':class': '{ hide: deadline._destroy }',
-              style: 'min-width: 155px' }
+            %th.deadline(v-for='deadline in listener_deadlines' :class='{ hide: deadline._destroy }' style='min-width: 155px')
               = f_deadline.input_field :_destroy, as: :hidden, 'v-model': 'deadline._destroy'
-              = f_deadline.input :deadline, wrapper: 'compact_input_group', input_group_html: { data: { flatpickr: true, wrap: true, alt_format: 'd/m/Y', enable_time: false } }, error_html: {} do
-                %span.input-group-btn{ data: { toggle: true } }
-                  %button.btn.btn-default.btn-sm{ type: 'button' }= fa_icon 'calendar'
-                = f_deadline.input_field :deadline, 'v-model': 'deadline.deadline', class: 'form-control input-sm', data: { input: true }
-                %span.input-group-btn= link_to fa_icon('calendar-times-o'), 'javascript:void(0)',
-                  '@click': 'destroy(deadline)', class: 'btn btn-danger btn-sm'
-          %th= link_to fa_icon('calendar-plus-o'), 'javascript:void(0)', '@click': 'addDeadline',
-            class: 'btn btn-primary btn-sm'
+              = f_deadline.input :deadline, wrapper: 'compact_input_group', input_group_html: { data: { flatpickr: true, wrap: true, alt_format: 'd/m/Y', enable_time: false } } do
+                .input-group.col-sm-12
+                  %span.input-group-btn{ data: { toggle: true } }
+                    %button.btn.btn-default.btn-sm(type='button')= fa_icon 'calendar'
+                  = f_deadline.input_field :deadline, 'v-model': 'deadline.deadline', class: 'form-control input-sm', data: { input: true }
+                  %span.input-group-btn= link_to fa_icon('calendar-times-o'), 'javascript:void(0)', '@click': 'destroy(deadline)', class: 'btn btn-danger btn-sm'
+          %th= link_to fa_icon('calendar-plus-o'), 'javascript:void(0)', '@click': 'addDeadline', class: 'btn btn-primary btn-sm'
       %tbody
         = f.simple_fields_for :categories do |f_category|
-          %tr{ 'v-for': 'category in categories', ':class': '{ hide: category._destroy }' }
+          %tr(v-for='category in categories' :class='{ hide: category._destroy }')
             %td
               = f_category.input_field :id, as: :hidden, 'v-model': 'category.id' if f_category.object.id
               = f_category.input_field :_destroy, as: :hidden, 'v-model': 'category._destroy'
-              = f_category.input :name, label: false, wrapper: 'compact_input_group' do
-                = f_category.input_field :name, 'v-model': 'category.name', class: 'form-control input-sm'
-                %span.input-group-btn= link_to fa_icon('user-times'), 'javascript:void(0)',
-                  '@click': 'destroy(category)', class: 'btn btn-danger btn-sm'
+              = f_category.input :name, label: false, error: false, wrapper: 'compact_input_group', wrapper_html: { ':class': '{ "has-error": category.name_errors }' } do
+                .input-group.col-sm-12
+                  = f_category.input_field :name, 'v-model': 'category.name', class: 'form-control input-sm'
+                  %span.input-group-btn= link_to fa_icon('user-times'), 'javascript:void(0)',
+                    '@click': 'destroy(category)', class: 'btn btn-danger btn-sm'
+                %span.help-block(v-for='error in category.name_errors') {{ error }}
             = f_category.simple_fields_for :listener_deadline_values do |f_deadline_value|
-              %td{ 'v-for': 'deadline_value in category.listener_deadline_values', ':class': '{ hide: deadline_value.deadline._destroy }' }
+              %td(v-for='deadline_value in category.listener_deadline_values' :class='{ hide: deadline_value.deadline._destroy }')
                 = f_deadline_value.input_field :id, as: :hidden, 'v-model': 'deadline_value.id' if f_deadline_value.object.id
                 = f_deadline_value.input_field :_destroy, as: :hidden, 'v-model': 'deadline_value.deadline._destroy'
                 = f_deadline_value.input_field :deadline, as: :hidden, 'v-model': 'deadline_value.deadline.deadline'
-                = f_deadline_value.input :value, label: false, wrapper: 'compact_input_group' do
-                  %span.input-group-addon.input-sm R$
-                  = f_deadline_value.input_field :value, as: :string, 'v-model': 'deadline_value.value', class: 'form-control input-sm'
+                = f_deadline_value.input :value, label: false, wrapper: 'compact_input_group', wrapper_html: { ':class': '{ "has-error": deadline_value.value_errors }' } do
+                  .input-group.col-sm-12
+                    %span.input-group-addon.input-sm R$
+                    = f_deadline_value.input_field :value, as: :string, 'v-model': 'deadline_value.value', class: 'form-control input-sm'
+                  %span.help-block(v-for='error in deadline_value.value_errors') {{ error }}
 
   = f.button :submit, class: 'btn-primary'
 
 :coffeescript
-  categories = #{@nested_form.categories.as_json(
+  #{raise 'fuu'}
+  @errors = #{@nested_form.errors.to_json}
+  @categories = #{@nested_form.categories.as_json(
     only: [:id, :name, :_destroy], include: {
+      listener_deadlines: { only: [:deadline, :_destroy] },
       listener_deadline_values: { only: [:id, :value] },
       presenter_deadline_values: { only: [:id, :value] }
     }
   ).to_json}
+  for key, value of @errors
+    eval "\#{key}_errors=\#{JSON.stringify(value)}"
   listener_deadlines = #{@nested_form.listener_deadlines.as_json(only: [:deadline, :_destroy]).to_json}
   presenter_deadlines = #{@nested_form.presenter_deadlines.as_json(only: [:deadline, :_destroy]).to_json}
   categories.forEach (category) ->

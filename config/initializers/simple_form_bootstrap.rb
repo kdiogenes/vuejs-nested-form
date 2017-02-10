@@ -138,14 +138,12 @@ SimpleForm.setup do |config|
     end
   end
 
-  config.wrappers :compact_input_group, tag: 'div', error_class: 'has-error' do |b|
+  config.wrappers :compact_input_group, tag: 'div' do |b|
     b.use :html5
     b.use :placeholder
 
-    b.wrapper :input_group, tag: 'div', class: 'input-group col-sm-12', html: {} do |append|
-      append.use :input, class: 'form-control'
-    end
-    b.use :error, wrap_with: { tag: 'span', class: 'help-block compact-help-block' }
+    b.use :input, class: 'form-control'
+    # b.use :error, wrap_with: { tag: 'span', class: 'help-block compact-help-block' }
     b.use :hint,  wrap_with: { tag: 'p', class: 'compact-help-block' }
   end
   # Wrappers for forms and inputs using the Bootstrap toolkit.
