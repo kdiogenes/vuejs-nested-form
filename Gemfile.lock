@@ -1,5 +1,6 @@
-PATH
-  remote: vendor/gems/active_type
+GIT
+  remote: https://github.com/cerdiogenes/active_type
+  revision: 67c4b7b7f4a0de8265e0b04d4486273d611d73ad
   specs:
     active_type (0.6.2)
       activerecord (>= 3.2)

@@ -29,7 +29,7 @@ gem 'jbuilder', '~> 2.5'
 
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
-gem 'active_type', path: './vendor/gems/active_type'
+gem 'active_type', git: 'https://github.com/cerdiogenes/active_type'
 gem 'haml'
 gem 'haml-rails'
 gem 'simple_form'
