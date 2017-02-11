@@ -1,6 +1,6 @@
 class Category < ApplicationRecord
   has_many :listener_deadline_values, -> { where(form_of_participation: 'Listener') }, 
-    class_name: DeadlineValue, foreign_key: :category_id, dependent: :destroy, index_errors: true
+    class_name: DeadlineValue, foreign_key: :category_id, dependent: :destroy
   has_many :presenter_deadline_values, -> { where(form_of_participation: 'Presenter') },
     class_name: DeadlineValue, foreign_key: :category_id, dependent: :destroy
 

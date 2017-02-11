@@ -17,10 +17,13 @@ class NestedFormController < ApplicationController
     @nested_form.categories = [Category.new] if @nested_form.categories.nil?
     @nested_form.categories.each do |category|
       category.listener_deadline_values.build if category.listener_deadline_values.empty?
-      # category.presenter_deadline_values.build if category.presenter_deadline_values.empty?
+      category.presenter_deadline_values.build if category.presenter_deadline_values.empty?
+    end
+    if @nested_form.listener_deadlines.nil? || @nested_form.presenter_deadlines.nil?
+      @nested_form.listener_deadlines ||= @nested_form.categories.sample.try(:listener_deadlines)
+      @nested_form.presenter_deadlines ||= @nested_form.categories.sample.try(:presenter_deadlines)
     end
     @nested_form.validate if request.method == 'POST'
-    @nested_form.listener_deadlines.each(&:validate)
     @nested_form
   end
 
