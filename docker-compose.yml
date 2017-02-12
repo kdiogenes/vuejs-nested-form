@@ -1,7 +1,7 @@
 version: '2'
 services:
   db:
-    image: postgres
+    image: postgres:alpine
     command: -c fsync=off # *** don't use in production! ***
   web:
     build: .
@@ -16,7 +16,7 @@ services:
       - db
   spring:
     build: .
-    user: '1000:1000' # user_id:group_id
+    user: myuser # user_id:group_id
     volumes:
       - .:/myapp
       - bundle:/usr/local/bundle
