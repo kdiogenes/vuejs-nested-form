@@ -143,7 +143,6 @@ SimpleForm.setup do |config|
     b.use :placeholder
 
     b.use :input, class: 'form-control'
-    # b.use :error, wrap_with: { tag: 'span', class: 'help-block compact-help-block' }
     b.use :hint,  wrap_with: { tag: 'p', class: 'compact-help-block' }
   end
   # Wrappers for forms and inputs using the Bootstrap toolkit.
